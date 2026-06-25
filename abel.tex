@@ -21,7 +21,7 @@
     \toprule
     \textbf{Component} & \textbf{Earlier (v1)} & \textbf{Now (v2)} \\
     \midrule
-    State      & $12$-dim aggregated   & \textcolor{SoftCoral}{\textbf{$2K{+}2$ per-job, normalised}} \\
+    State      & $12$-dim aggregated   & \textcolor{SoftCoral}{\textbf{changed}} \\
     Action     & Discrete$(K{+}1)$ promote         & unchanged \\
     Transition & $\Delta t$ step, stochastic arrivals & unchanged \\
     Reward     & $w_u u_t - w_Q Q_t$ (unbounded)   & \textcolor{SoftCoral}{\textbf{$-w\,\tfrac{\min(D_t,n_{\text{free}})}{N}\in[-1,0]$}} \\
@@ -37,38 +37,64 @@
 
 % ---- Slide 2: State change (CHANGED) -----------------------
 \begin{frame}{State $\;s_t$ \hfill \small\textcolor{SoftCoral}{(redesigned)}}
-  \begin{columns}[T]
-    \column{0.45\textwidth}
-      \begin{block}{Earlier (v1): aggregated summary}
-        \small
-        $s_t \in \mathbb{R}^{12}$: cluster stats $+$ queue \emph{means}.
-        \begin{itemize}
-          \item Cluster stats: $u_t$, $n_{\text{free}}$, $Q_t$, $\dots$
-          \item Queue summarised by means $\bar{q}_t,\bar{w}_t$
+  \footnotesize
+  \begin{columns}[T,onlytextwidth]
+    \column{0.315\textwidth}
+      \begin{block}{v1: aggregated summary}
+        \begin{minipage}[t][4.0cm]{\linewidth}
+        \begin{minipage}[t][2.0cm]{\linewidth}
+        $s_t \in \mathbb{R}^{12}$: cluster stats $+$ queue means.
+        $$
+          s_t = \big[\,u_t,\ n_{\text{free}},\ Q_t,\ \bar{q}_t,\ \bar{w}_t,\ \dots\,\big]
+        $$
+        \end{minipage}
+        \begin{itemize}\setlength\itemsep{3pt}
+          \item Queue summarised by \emph{means} only
           \item No per-job detail
         \end{itemize}
+        \end{minipage}
       \end{block}
 
-    \column{0.45\textwidth}
-      \begin{block}{Now (v2): per-job features}
-        \small
+    \hfill
+    \column{0.315\textwidth}
+      \begin{block}{v2(a): per-job features}
+        \begin{minipage}[t][4.0cm]{\linewidth}
+        \begin{minipage}[t][2.0cm]{\linewidth}
         $s_t \in \mathbb{R}^{2K+2}$, one entry per visible job:
         $$
           s_t = \Big[\tfrac{t}{T},\ \tfrac{n_{\text{free}}}{N},\
           \big(\tfrac{q_i}{N}\big)_{i=1}^{K},\
           \big(\tfrac{w_i}{T}\big)_{i=1}^{K}\Big]
         $$
-        \begin{itemize}
+        \end{minipage}
+        \begin{itemize}\setlength\itemsep{3pt}
           \item Exposes \emph{each} visible job, not just a mean
           \item Empty slots padded with $-1$ sentinel
         \end{itemize}
+        \end{minipage}
+      \end{block}
+
+    \hfill
+    \column{0.315\textwidth}
+      \begin{block}{v2(b): + priority}
+        \begin{minipage}[t][4.0cm]{\linewidth}
+        \begin{minipage}[t][2.0cm]{\linewidth}
+        $s_t \in \mathbb{R}^{3K+2}$: adds one priority per visible job:
+        $$
+          s_t = \Big[\dots,\ \big(\tfrac{p_i}{10}\big)_{i=1}^{K}\Big]
+        $$
+        \end{minipage}
+        \begin{itemize}\setlength\itemsep{3pt}
+          \item Priority $p_i \in \{0,\dots,10\}$, normalised $p_i/10$
+          \item Lets the policy weigh \emph{urgency}, not just size
+        \end{itemize}
+        \end{minipage}
       \end{block}
   \end{columns}
 
-  \vspace{1em}
+  \vspace{0.8em}
   \centering
   \small\textcolor{DeepBlue}{\textbf{Why:}} per-job observation lets the policy reason about \emph{which} job to promote, not just queue averages.
-  \vspace{1em}
  \notebar{\mbox{$u_t$ = cluster utilisation} \;\(\mid\)\; \mbox{$Q_t$ = raw queue length} \;\(\mid\)\; \mbox{$D_t$ = queue demand (nodes)} \;\(\mid\)\; \mbox{$n_{\text{free}}$ = idle nodes} \;\(\mid\)\; \mbox{$N$ = total nodes}}
 \end{frame}
 
@@ -106,7 +132,7 @@
         \begin{minipage}[t][4.2cm]{\linewidth}
         $$ r^{\text{p}}_t = -w_p\,\widehat{\textstyle\sum_{j} \tfrac{p_j}{T_j}} $$
         \begin{itemize}\setlength\itemsep{2pt}
-          \item Over \textbf{running \& queued} jobs ($p_j$=prio, $T_j$=runtime)
+          \item Over \textbf{running \& queued} jobs
           \item Ranks by $p_j/T_j$: \emph{priority-weighted SJF}
           \item Big job wins only if priority outweighs its length
         \end{itemize}
@@ -117,6 +143,11 @@
   \vspace{0.4em}
   \centering
   \textcolor{DeepBlue}{\textbf{Why:}} bounded, well-scaled signals that target head-of-line blocking and priority directly.
+  \vspace{0.4em}
+ 
+ \notebar{\mbox{$u_t$ = utilisation} \;\(\mid\)\; \mbox{$Q_t$ = queue length} \;\(\mid\)\; \mbox{$D_t$ = queue demand (nodes)} \;\(\mid\)\; \mbox{$n_{\text{free}}$ = idle nodes} \;\(\mid\)\; \mbox{$N$ = total nodes} \;\(\mid\)\; \mbox{$p_j$ = job priority} \;\(\mid\)\; \mbox{$T_j$ = job runtime}}
+
+
 \end{frame}
 
 
