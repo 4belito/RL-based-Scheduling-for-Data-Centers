@@ -1,48 +1,206 @@
 
 
-\begin{frame}{Test}
+% ============================================================
+%  abel.tex  —  FRAGMENT, included via \input from main.tex
+%  Story: how the MDP changed from v1 (mdp_old) to v2 (mdp)
+%  Uses colors/styles defined in main.tex.
+% ============================================================
+
+% ============================================================
+\section{MDP Formulation}
+% ============================================================
+
+% ---- Slide 0: Define the MDP -------------------------------
+\begin{frame}{Defining the Problem as an MDP}
+  \small
+  A cluster of $N$ identical nodes runs a stream of arriving jobs. Each job asks
+  for a number of nodes and a wall-clock runtime. At every decision point the
+  scheduler may decide \emph{which job runs next} from a set of $K$ visible jobs.
+
+  \vspace{0.3em}
+  \begin{block}{Markov Decision Process}
+    We frame scheduling as an MDP and learn the job selection policy with RL:
+    $$ \mathcal{M} = (\mathcal{S},\ \mathcal{A},\ P,\ R,\ \gamma) $$
+  \end{block}
+
+  \vspace{0.1em}
+  \begin{center}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{c l c}
+    \toprule
+    \textbf{Symbol} & \textbf{Meaning} & \textbf{Default} \\
+    \midrule
+    $N$              & total nodes in the cluster     & $64$ \\
+    $K$              & max visible queue length       & $10$ \\
+    $\Delta t$       & seconds advanced per step      & $60$ \\
+    $T$              & episode length (seconds)       & $86\,400$ (24\,h) \\
+    $H = T/\Delta t$ & decision horizon (steps)       & $1\,440$ \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+\end{frame}
+
+% ---- Slide 1: Roadmap of what changed ----------------------
+\begin{frame}{Walking Through the MDP: What Changed}
+  \small
+  We keep the \textbf{action} and \textbf{dynamics}, and redesign the
+  \textbf{state} and \textbf{reward} to be \alert{bounded and load-agnostic}.
+
+  \vspace{0.4em}
+  \begin{center}
+  \renewcommand{\arraystretch}{1.25}
+  \begin{tabular}{l c c}
+    \toprule
+    \textbf{Component} & \textbf{Earlier (v1)} & \textbf{Now (v2)} \\
+    \midrule
+    State      & $12$-dim aggregated, raw scales   & \textcolor{SoftCoral}{\textbf{$2K{+}2$ per-job, normalised}} \\
+    Action     & Discrete$(K{+}1)$ promote         & unchanged \\
+    Transition & $\Delta t$ step, stochastic arrivals & unchanged \\
+    Reward     & $w_u u_t - w_Q Q_t$ (unbounded)   & \textcolor{SoftCoral}{\textbf{$-w\,\tfrac{\min(D_t,n_{\text{free}})}{N}\in[-1,0]$}} \\
+    Horizon    & truncate at $T$ or drained        & unchanged \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+  \vspace{0.3em}
   \centering
-  \begin{tikzpicture}[scale=1.0]
-    % Central scheduler
-    \node[draw,rounded corners=6pt,fill=DeepBlue!12,minimum width=3.2cm,minimum height=1.1cm,font=\bfseries] (sched) at (0,0) {Scheduler};
-    
-    % Incoming jobs (left)
-    \node[draw,rounded corners,fill=SkyBlue!25,minimum width=1.1cm,minimum height=0.7cm] (j1) at (-5.5,1.5) {Job A};
-    \node[draw,rounded corners,fill=WarmGold!40,minimum width=1.1cm,minimum height=0.7cm] (j2) at (-5.5,0) {Job B};
-    \node[draw,rounded corners,fill=SoftCoral!35,minimum width=1.1cm,minimum height=0.7cm] (j3) at (-5.5,-1.5) {Job C};
-    \node[font=\scriptsize,DeepBlue] at (-5.5,2.3) {\textbf{Workloads}};
-    
-    % Arrows to scheduler
-    \draw[->,thick,DeepBlue!70] (j1) -- (sched);
-    \draw[->,thick,DeepBlue!70] (j2) -- (sched);
-    \draw[->,thick,DeepBlue!70] (j3) -- (sched);
-    
-    % Machines (right)
-    \draw[rounded corners=3pt,fill=gray!15,draw=DeepBlue!40] (4.0,1.8) rectangle (5.6,2.6);
-    \draw[rounded corners=3pt,fill=gray!15,draw=DeepBlue!40] (4.0,0.4) rectangle (5.6,1.2);
-    \draw[rounded corners=3pt,fill=gray!15,draw=DeepBlue!40] (4.0,-1.0) rectangle (5.6,-0.2);
-    \draw[rounded corners=3pt,fill=gray!15,draw=DeepBlue!40] (4.0,-2.4) rectangle (5.6,-1.6);
-    \node[font=\scriptsize] at (4.8,2.2) {Server 1};
-    \node[font=\scriptsize] at (4.8,0.8) {Server 2};
-    \node[font=\scriptsize] at (4.8,-0.6) {Server 3};
-    \node[font=\scriptsize] at (4.8,-2.0) {Server 4};
-    \node[font=\scriptsize,DeepBlue] at (4.8,3.1) {\textbf{Cluster}};
-    
-    % Arrows from scheduler to machines
-    \draw[->,thick,SkyBlue!80!black] (sched) -- (4.0,2.2);
-    \draw[->,thick,SkyBlue!80!black] (sched) -- (4.0,0.8);
-    \draw[->,thick,SkyBlue!80!black] (sched) -- (4.0,-0.6);
-    \draw[->,thick,SkyBlue!80!black] (sched) -- (4.0,-2.0);
-    
-    % Outcomes (bottom)
-    \node[draw,rounded corners=4pt,fill=SkyBlue!15,minimum width=2.4cm,minimum height=0.8cm,font=\small] (speed) at (-4,-3.8) {Faster jobs};
-    \node[draw,rounded corners=4pt,fill=WarmGold!25,minimum width=2.4cm,minimum height=0.8cm,font=\small] (util) at (0,-3.8) {Higher utilization};
-    \node[draw,rounded corners=4pt,fill=SoftCoral!20,minimum width=2.4cm,minimum height=0.8cm,font=\small] (energy) at (4,-3.8) {Lower energy};
-    
-    \draw[->,thick,DeepBlue!50] (sched) -- (speed);
-    \draw[->,thick,DeepBlue!50] (sched) -- (util);
-    \draw[->,thick,DeepBlue!50] (sched) -- (energy);
-    
-    \node[font=\footnotesize,DeepBlue] at (0,-4.8) {\textbf{Good scheduling = cost savings + SLA compliance + sustainability}};
-  \end{tikzpicture}
+  \small\textcolor{DeepBlue}{Comparison slides follow \emph{only} for the two components that changed.}
+\end{frame}
+
+% ---- Slide 2: State change (CHANGED) -----------------------
+\begin{frame}{State $\;s_t$ \hfill \small\textcolor{SoftCoral}{(redesigned)}}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+      \begin{block}{Earlier (v1): aggregated summary}
+        \small
+        $s_t \in \mathbb{R}^{12}$, \textbf{raw} unbounded values.
+        \begin{itemize}
+          \item Queue collapsed to \emph{means}: $\bar{q}_t,\ \bar{w}_t$
+          \item Native scales (e.g. elapsed time in hours)
+          \item $\mathcal{S} = \text{Box}\big([-1,10^{6}]^{12}\big)$
+        \end{itemize}
+      \end{block}
+
+    \column{0.5\textwidth}
+      \begin{block}{Now (v2): per-job, normalised}
+        \small
+        $s_t \in \mathbb{R}^{2K+2}$, all scaled to $[0,1]$:
+        $$
+          s_t = \Big[\tfrac{t}{T},\ \tfrac{n_{\text{free}}}{N},\
+          \big(\tfrac{q_i}{N}\big)_{i=1}^{K},\
+          \big(\tfrac{w_i}{T}\big)_{i=1}^{K}\Big]
+        $$
+        \begin{itemize}
+          \item Exposes \emph{each} visible job, not just a mean
+          \item Empty slots padded with $-1$ sentinel
+          \item $\mathcal{S} = \text{Box}\big([0,1]^2\times[-1,1]^{2K}\big)$
+        \end{itemize}
+      \end{block}
+  \end{columns}
+
+  \vspace{0.2em}
+  \centering
+  \small\textcolor{DeepBlue}{\textbf{Why:}} bounded, stationary inputs $\Rightarrow$ stable learning and better generalisation.
+\end{frame}
+
+% ---- Slide 3: Action (UNCHANGED) ---------------------------
+\begin{frame}{Action $\;a_t$ \hfill \small\textcolor{SkyBlue!70!black}{(unchanged)}}
+  \small
+  A single \textbf{discrete} choice over the visible queue:
+  $$ \mathcal{A} = \{0, 1, 2, \dots, K\} = \text{Discrete}(K{+}1) $$
+  \begin{itemize}
+    \item $a_t = 0$ --- \textbf{no-op}: leave the queue ordering unchanged.
+    \item $a_t = k \in \{1,\dots,K\}$ --- \textbf{promote} the $k$-th visible queued
+          job to the front, so it is considered first on the next dispatch.
+  \end{itemize}
+  \begin{block}{Key idea}
+    The agent never dispatches jobs directly --- it only \emph{reprioritises}.
+    The underlying scheduler then greedily packs jobs that fit onto free nodes.
+  \end{block}
+\end{frame}
+
+% ---- Slide 4: Transition (UNCHANGED) -----------------------
+\begin{frame}{Transition $\;P(s_{t+1}\mid s_t, a_t)$ \hfill \small\textcolor{SkyBlue!70!black}{(unchanged)}}
+  \small
+  Each step advances the simulation by $\Delta t$ seconds:
+  \begin{enumerate}
+    \item \textbf{Apply the action} --- if $a_t = k > 0$, move that job to the head of the queue.
+    \item \textbf{Step the scheduler} by $\Delta t$: dispatch queued jobs onto free
+          nodes (greedy packing), advance running jobs, release nodes from jobs that finish.
+    \item \textbf{New arrivals} --- jobs arrive stochastically (Poisson-like
+          inter-arrival times set by the \emph{offered load}).
+  \end{enumerate}
+  \begin{block}{Source of stochasticity}
+    Job arrivals and the workload sampled each episode make the next state only
+    \emph{partially} predictable from $(s_t, a_t)$.
+  \end{block}
+\end{frame}
+
+% ---- Slide 5: Reward change (CHANGED) ----------------------
+\begin{frame}{Reward $\;R(s_t, a_t)$ \hfill \small\textcolor{SoftCoral}{(redesigned)}}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+      \begin{block}{Earlier (v1): util.\ $-$ queue penalty}
+        \small
+        $$ r_t = w_u\, u_t \;-\; w_Q\, Q_t $$
+        \centering $w_u = 0.5,\quad w_Q = 0.1$
+        \begin{itemize}
+          \item Rewards busy nodes, penalises backlog
+          \item Penalty uses \textbf{raw} queue count $Q_t$
+          \item \alert{Unbounded} --- scales with workload size
+        \end{itemize}
+      \end{block}
+
+    \column{0.5\textwidth}
+      \begin{block}{Now (v2): schedulable-idle penalty}
+        \small
+        $$ r_t = -\,w\cdot \frac{\min\big(D_t,\, n_{\text{free}}\big)}{N},\quad w=1 $$
+        \begin{itemize}
+          \item Charges only for idle nodes the queue \emph{could} use ($D_t$ = queue demand)
+          \item Bounded in $[-1,0]$, normalised by $N$
+          \item \textcolor{DeepBlue}{Load-agnostic}; vanishes when drained or full
+        \end{itemize}
+      \end{block}
+  \end{columns}
+
+  \vspace{0.2em}
+  \centering
+  \small\textcolor{DeepBlue}{\textbf{Why:}} targets head-of-line blocking directly with a well-scaled signal.
+\end{frame}
+
+% ---- Slide 6: Horizon & Objective (UNCHANGED) --------------
+\begin{frame}{Horizon \& Objective \hfill \small\textcolor{SkyBlue!70!black}{(unchanged)}}
+  \small
+  An episode \textbf{truncates} when either
+  $$ t \geq T \quad(\text{24\,h elapsed}) \qquad\text{or}\qquad \text{queue \& running sets are empty (drained).} $$
+  There is no absorbing failure state, so \texttt{terminated} is always \texttt{False};
+  episodes end only by truncation.
+
+  \begin{block}{Learning objective}
+    The agent learns a policy $\pi_\theta(a_t \mid s_t)$ maximising the expected
+    discounted return:
+    $$ \max_{\theta}\; \mathbb{E}_{\pi_\theta}\!\left[\sum_{t=0}^{H-1} \gamma^{\,t}\, r_t\right] $$
+    i.e.\ \textbf{keep the cluster busy} while draining the queue.
+  \end{block}
+\end{frame}
+
+% ---- Slide 7: Why it matters -------------------------------
+\begin{frame}{Why These Changes Matter}
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+      \textbf{From v1 to v2 we gain:}
+      \begin{itemize}
+        \item \textbf{Bounded signals} --- state in $[0,1]$, reward in $[-1,0]$
+        \item \textbf{Load invariance} --- no dependence on raw queue size or job distribution
+        \item \textbf{Richer observation} --- per-job features instead of a single mean
+        \item \textbf{Direct objective} --- penalise \emph{schedulable} idle capacity (head-of-line blocking)
+      \end{itemize}
+
+    \column{0.48\textwidth}
+      \begin{alertblock}{Net effect}
+        A policy that learns to \textbf{promote jobs that fit} the free nodes,
+        draining the queue faster --- and that \textbf{transfers} across
+        workloads without re-tuning reward weights.
+      \end{alertblock}
+  \end{columns}
 \end{frame}
