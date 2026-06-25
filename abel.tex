@@ -10,43 +10,27 @@
 \section{MDP Formulation}
 % ============================================================
 
-% ---- Slide 0: Define the MDP -------------------------------
+% Compact notation reminder pinned to the bottom of each slide.
+% Pass only the symbols that appear on that slide.
+\newcommand{\notebar}[1]{%
+  \vfill
+  {\color{DeepBlue!30!white}\hrule height 0.4pt}
+  \vspace{2pt}%
+  {\scriptsize\textcolor{DeepBlue!75!black}{\textbf{Notation:}\; #1}}%
+}
+
+% ---- Slide 0+1: Define the MDP & what changed --------------
 \begin{frame}{Defining the Problem as an MDP}
-  \small
-  A cluster of $N$ identical nodes runs a stream of arriving jobs. Each job asks
-  for a number of nodes and a wall-clock runtime. At every decision point the
-  scheduler may decide \emph{which job runs next} from a set of $K$ visible jobs.
+  $$ \mathcal{M} = (\underbrace{\mathcal{S}}_{\text{state}},\ \underbrace{\mathcal{A}}_{\text{action}},\ \underbrace{P}_{\text{transition}},\ \underbrace{R}_{\text{reward}},\ \underbrace{\gamma}_{\text{discount}}) $$
 
-  \vspace{0.3em}
-  \begin{block}{Why a Markov Decision Process?}
-    \small
-    Scheduling is \textbf{sequential}: each choice changes the cluster the next
-    one is made on, and its payoff (utilisation, delay) shows up later. An MDP
-    captures exactly this --- an agent observes a \emph{state}, takes an
-    \emph{action}, gets a \emph{reward}, and moves to the next state:
-    $$ \mathcal{M} = (\underbrace{\mathcal{S}}_{\text{state}},\ \underbrace{\mathcal{A}}_{\text{action}},\ \underbrace{P}_{\text{transition}},\ \underbrace{R}_{\text{reward}},\ \underbrace{\gamma}_{\text{discount}}) $$
-  \end{block}
-
-  \vspace{0.1em}
-  We learn a policy $\pi_\theta(a_t\mid s_t)$ with RL that maximises long-run
-  reward. The next slides walk through each component
-  $(\mathcal{S},\mathcal{A},P,R)$ in turn.
-\end{frame}
-
-% ---- Slide 1: Roadmap of what changed ----------------------
-\begin{frame}{Walking Through the MDP: What Changed}
-  \small
-  We keep the \textbf{action} and \textbf{dynamics}, and redesign the
-  \textbf{state} and \textbf{reward} to be \alert{bounded and load-agnostic}.
-
-  \vspace{0.4em}
+  \vspace{0.6em}
   \begin{center}
   \renewcommand{\arraystretch}{1.25}
   \begin{tabular}{l c c}
     \toprule
     \textbf{Component} & \textbf{Earlier (v1)} & \textbf{Now (v2)} \\
     \midrule
-    State      & $12$-dim aggregated, raw scales   & \textcolor{SoftCoral}{\textbf{$2K{+}2$ per-job, normalised}} \\
+    State      & $12$-dim aggregated   & \textcolor{SoftCoral}{\textbf{$2K{+}2$ per-job, normalised}} \\
     Action     & Discrete$(K{+}1)$ promote         & unchanged \\
     Transition & $\Delta t$ step, stochastic arrivals & unchanged \\
     Reward     & $w_u u_t - w_Q Q_t$ (unbounded)   & \textcolor{SoftCoral}{\textbf{$-w\,\tfrac{\min(D_t,n_{\text{free}})}{N}\in[-1,0]$}} \\
@@ -57,27 +41,27 @@
 
   \vspace{0.3em}
   \centering
-  \small\textcolor{DeepBlue}{Comparison slides follow \emph{only} for the two components that changed.}
+  \notebar{\mbox{$N$ = total nodes} \;\textbar\; \mbox{$n_{\text{free}}$ = idle nodes} \;\textbar\; \mbox{$K$ = visible queued jobs} \;\textbar\; \mbox{$D_t$ = queue demand} \;\textbar\; \mbox{$u_t$ = utilisation} \;\textbar\; \mbox{$Q_t$ = queue length} \;\textbar\; \mbox{$T$ = horizon}}
 \end{frame}
 
 % ---- Slide 2: State change (CHANGED) -----------------------
 \begin{frame}{State $\;s_t$ \hfill \small\textcolor{SoftCoral}{(redesigned)}}
   \begin{columns}[T]
-    \column{0.5\textwidth}
+    \column{0.45\textwidth}
       \begin{block}{Earlier (v1): aggregated summary}
         \small
-        $s_t \in \mathbb{R}^{12}$, \textbf{raw} unbounded values.
+        $s_t \in \mathbb{R}^{12}$: cluster stats $+$ queue \emph{means}.
         \begin{itemize}
-          \item Queue collapsed to \emph{means}: $\bar{q}_t,\ \bar{w}_t$
-          \item Native scales (e.g. elapsed time in hours)
-          \item $\mathcal{S} = \text{Box}\big([-1,10^{6}]^{12}\big)$
+          \item Cluster stats: $u_t$, $n_{\text{free}}$, $Q_t$, $\dots$
+          \item Queue summarised by means $\bar{q}_t,\bar{w}_t$
+          \item No per-job detail
         \end{itemize}
       \end{block}
 
-    \column{0.5\textwidth}
-      \begin{block}{Now (v2): per-job, normalised}
+    \column{0.45\textwidth}
+      \begin{block}{Now (v2): per-job features}
         \small
-        $s_t \in \mathbb{R}^{2K+2}$, all scaled to $[0,1]$:
+        $s_t \in \mathbb{R}^{2K+2}$, one entry per visible job:
         $$
           s_t = \Big[\tfrac{t}{T},\ \tfrac{n_{\text{free}}}{N},\
           \big(\tfrac{q_i}{N}\big)_{i=1}^{K},\
@@ -86,50 +70,17 @@
         \begin{itemize}
           \item Exposes \emph{each} visible job, not just a mean
           \item Empty slots padded with $-1$ sentinel
-          \item $\mathcal{S} = \text{Box}\big([0,1]^2\times[-1,1]^{2K}\big)$
         \end{itemize}
       \end{block}
   \end{columns}
 
-  \vspace{0.2em}
+  \vspace{0.4em}
   \centering
-  \small\textcolor{DeepBlue}{\textbf{Why:}} bounded, stationary inputs $\Rightarrow$ stable learning and better generalisation.
+  \small\textcolor{DeepBlue}{\textbf{Why:}} per-job observation lets the policy reason about \emph{which} job to promote, not just queue averages.
+  \notebar{\mbox{$u_t$ = utilisation} \;\textbar\; \mbox{$n_{\text{free}}$ = idle nodes} \;\textbar\; \mbox{$Q_t$ = queue length} \;\textbar\; \mbox{$\bar{q}_t,\bar{w}_t$ = queue means} \;\textbar\; \mbox{$q_i,w_i$ = per-job size / wait} \;\textbar\; \mbox{$t,T$ = elapsed / horizon} \;\textbar\; \mbox{$N$ = total nodes} \;\textbar\; \mbox{$K$ = visible jobs}}
 \end{frame}
 
-% ---- Slide 3: Action (UNCHANGED) ---------------------------
-\begin{frame}{Action $\;a_t$ \hfill \small\textcolor{SkyBlue!70!black}{(unchanged)}}
-  \small
-  A single \textbf{discrete} choice over the visible queue:
-  $$ \mathcal{A} = \{0, 1, 2, \dots, K\} = \text{Discrete}(K{+}1) $$
-  \begin{itemize}
-    \item $a_t = 0$ --- \textbf{no-op}: leave the queue ordering unchanged.
-    \item $a_t = k \in \{1,\dots,K\}$ --- \textbf{promote} the $k$-th visible queued
-          job to the front, so it is considered first on the next dispatch.
-  \end{itemize}
-  \begin{block}{Key idea}
-    The agent never dispatches jobs directly --- it only \emph{reprioritises}.
-    The underlying scheduler then greedily packs jobs that fit onto free nodes.
-  \end{block}
-\end{frame}
-
-% ---- Slide 4: Transition (UNCHANGED) -----------------------
-\begin{frame}{Transition $\;P(s_{t+1}\mid s_t, a_t)$ \hfill \small\textcolor{SkyBlue!70!black}{(unchanged)}}
-  \small
-  Each step advances the simulation by $\Delta t$ seconds:
-  \begin{enumerate}
-    \item \textbf{Apply the action} --- if $a_t = k > 0$, move that job to the head of the queue.
-    \item \textbf{Step the scheduler} by $\Delta t$: dispatch queued jobs onto free
-          nodes (greedy packing), advance running jobs, release nodes from jobs that finish.
-    \item \textbf{New arrivals} --- jobs arrive stochastically (Poisson-like
-          inter-arrival times set by the \emph{offered load}).
-  \end{enumerate}
-  \begin{block}{Source of stochasticity}
-    Job arrivals and the workload sampled each episode make the next state only
-    \emph{partially} predictable from $(s_t, a_t)$.
-  \end{block}
-\end{frame}
-
-% ---- Slide 5: Reward change (CHANGED) ----------------------
+% ---- Slide 3: Reward change (CHANGED) ----------------------
 \begin{frame}{Reward $\;R(s_t, a_t)$ \hfill \small\textcolor{SoftCoral}{(redesigned)}}
   \begin{columns}[T]
     \column{0.5\textwidth}
@@ -140,7 +91,7 @@
         \begin{itemize}
           \item Rewards busy nodes, penalises backlog
           \item Penalty uses \textbf{raw} queue count $Q_t$
-          \item \alert{Unbounded} --- scales with workload size
+          \item \alert{Unbounded}: scales with workload size
         \end{itemize}
       \end{block}
 
@@ -159,40 +110,25 @@
   \vspace{0.2em}
   \centering
   \small\textcolor{DeepBlue}{\textbf{Why:}} targets head-of-line blocking directly with a well-scaled signal.
+  \notebar{$u_t$ = cluster utilisation \;\textbar\; $Q_t$ = raw queue length \;\textbar\; $D_t$ = total queue demand (nodes) \;\textbar\; $n_{\text{free}}$ = idle nodes \;\textbar\; $N$ = total nodes}
 \end{frame}
 
-% ---- Slide 6: Horizon & Objective (UNCHANGED) --------------
-\begin{frame}{Horizon \& Objective \hfill \small\textcolor{SkyBlue!70!black}{(unchanged)}}
-  \small
-  An episode \textbf{truncates} when either
-  $$ t \geq T \quad(\text{24\,h elapsed}) \qquad\text{or}\qquad \text{queue \& running sets are empty (drained).} $$
-  There is no absorbing failure state, so \texttt{terminated} is always \texttt{False};
-  episodes end only by truncation.
-
-  \begin{block}{Learning objective}
-    The agent learns a policy $\pi_\theta(a_t \mid s_t)$ maximising the expected
-    discounted return:
-    $$ \max_{\theta}\; \mathbb{E}_{\pi_\theta}\!\left[\sum_{t=0}^{H-1} \gamma^{\,t}\, r_t\right] $$
-    i.e.\ \textbf{keep the cluster busy} while draining the queue.
-  \end{block}
-\end{frame}
-
-% ---- Slide 7: Why it matters -------------------------------
+% ---- Slide 4: Why it matters -------------------------------
 \begin{frame}{Why These Changes Matter}
   \begin{columns}[T]
     \column{0.52\textwidth}
       \textbf{From v1 to v2 we gain:}
       \begin{itemize}
-        \item \textbf{Bounded signals} --- state in $[0,1]$, reward in $[-1,0]$
-        \item \textbf{Load invariance} --- no dependence on raw queue size or job distribution
-        \item \textbf{Richer observation} --- per-job features instead of a single mean
-        \item \textbf{Direct objective} --- penalise \emph{schedulable} idle capacity (head-of-line blocking)
+        \item \textbf{Bounded signals}: state in $[0,1]$, reward in $[-1,0]$
+        \item \textbf{Load invariance}: no dependence on raw queue size or job distribution
+        \item \textbf{Richer observation}: per-job features instead of a single mean
+        \item \textbf{Direct objective}: penalise \emph{schedulable} idle capacity (head-of-line blocking)
       \end{itemize}
 
     \column{0.48\textwidth}
       \begin{alertblock}{Net effect}
         A policy that learns to \textbf{promote jobs that fit} the free nodes,
-        draining the queue faster --- and that \textbf{transfers} across
+        draining the queue faster, and that \textbf{transfers} across
         workloads without re-tuning reward weights.
       \end{alertblock}
   \end{columns}
