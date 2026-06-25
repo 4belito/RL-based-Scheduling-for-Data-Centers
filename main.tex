@@ -28,6 +28,13 @@
 \newcommand{\cmark}{\ding{51}}
 \newcommand{\xmark}{\ding{55}}
 
+\newcommand{\notebar}[1]{%
+  \vfill
+  {\color{DeepBlue!30!white}\hrule height 0.4pt}
+  \vspace{2pt}%
+  {\scriptsize\textcolor{DeepBlue!75!black}{\textbf{Notation:}\; #1}}%
+}
+
 \usepackage{svg}
 \svgpath{{images/}}
 \graphicspath{{images/}}
@@ -91,8 +98,9 @@
 
 \input{krishu.tex}
 
-
 \input{abel.tex}
+
+\input{future.tex}
 
 \begin{frame}
   \centering
