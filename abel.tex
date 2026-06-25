@@ -82,32 +82,46 @@
 
 % ---- Slide 3: Reward change (CHANGED) ----------------------
 \begin{frame}{Reward $\;R(s_t, a_t)$ \hfill \small\textcolor{SoftCoral}{(redesigned)}}
-  \begin{columns}[T]
-    \column{0.5\textwidth}
-      \begin{block}{Earlier (v1): util.\ $-$ queue penalty}
-        \small
-        $$ r_t = w_u\, u_t \;-\; w_Q\, Q_t $$
-        \centering $w_u = 0.5,\quad w_Q = 0.1$
-        \begin{itemize}
+  \footnotesize
+  \begin{columns}[T,onlytextwidth]
+    \column{0.315\textwidth}
+      \begin{block}{v1: util.\ $-$ queue}
+        \begin{minipage}[t][3.5cm]{\linewidth}
+        $$ r_t = w_u u_t - w_Q Q_t $$
+        \begin{itemize}\setlength\itemsep{2pt}
           \item Rewards busy nodes, penalises backlog
           \item Penalty uses \textbf{raw} queue count $Q_t$
           \item \alert{Unbounded}: scales with workload size
         \end{itemize}
+        \end{minipage}
       \end{block}
 
-    \column{0.5\textwidth}
-      \begin{block}{Now (v2): schedulable-idle penalty}
-        \small
-        $$ r_t = -\,w\cdot \frac{\min\big(D_t,\, n_{\text{free}}\big)}{N},\quad w=1 $$
-        \begin{itemize}
-          \item Charges only for idle nodes the queue \emph{could} use ($D_t$ = queue demand)
-          \item Bounded in $[-1,0]$, normalised by $N$
-          \item \textcolor{DeepBlue}{Load-agnostic}; vanishes when drained or full
+    \hfill
+    \column{0.315\textwidth}
+      \begin{block}{v2: schedulable-idle}
+        \begin{minipage}[t][3.5cm]{\linewidth}
+        $$ r_t = -w\,\frac{\min(D_t, n_{\text{free}})}{N} $$
+        \begin{itemize}\setlength\itemsep{2pt}
+          \item Charges only for idle nodes the queue \emph{could} use
+          \item Bounded $[-1,0]$, \textcolor{DeepBlue}{load-agnostic}
         \end{itemize}
+        \end{minipage}
+      \end{block}
+
+    \hfill
+    \column{0.315\textwidth}
+      \begin{block}{v2: priority slowdown}
+        \begin{minipage}[t][3.5cm]{\linewidth}
+        $$ r^{\text{p}}_t = -w_p\,\widehat{\textstyle\sum_{j} \tfrac{p_j}{T_j}} $$
+        \begin{itemize}\setlength\itemsep{2pt}
+          \item Summed over \textbf{running \& queued} jobs ($p_j$=priority, $T_j$=runtime)
+          \item Bounded $[-1,0]$; favours high-priority, short jobs
+        \end{itemize}
+        \end{minipage}
       \end{block}
   \end{columns}
 
-  \vspace{0.2em}
+  \vspace{0.4em}
   \centering
   \small\textcolor{DeepBlue}{\textbf{Why:}} targets head-of-line blocking directly with a well-scaled signal.
   \notebar{$u_t$ = cluster utilisation \;\textbar\; $Q_t$ = raw queue length \;\textbar\; $D_t$ = total queue demand (nodes) \;\textbar\; $n_{\text{free}}$ = idle nodes \;\textbar\; $N$ = total nodes}
