@@ -162,8 +162,9 @@
         \begin{minipage}[t][3.5cm]{\linewidth}
         $$ r^{\text{p}}_t = -w_p\,\widehat{\textstyle\sum_{j} \tfrac{p_j}{T_j}} $$
         \begin{itemize}\setlength\itemsep{2pt}
-          \item Summed over \textbf{running \& queued} jobs ($p_j$=priority, $T_j$=runtime)
-          \item Bounded $[-1,0]$; favours high-priority, short jobs
+          \item Over \textbf{running \& queued} jobs ($p_j$=priority, $T_j$=runtime)
+          \item Ranks by ratio $p_j/T_j$ --- \emph{priority-weighted shortest-job-first}
+          \item Big job wins \textbf{only if} important enough: $p_j/T_j$ beats rivals
         \end{itemize}
         \end{minipage}
       \end{block}
