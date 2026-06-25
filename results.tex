@@ -1,0 +1,75 @@
+% ============================================================
+%  results.tex  —  FRAGMENT, included via \input from main.tex
+%  Experimental setup + results figures.
+%  Body-only (no \usepackage); reuses colors/styles from main.tex.
+%  Images used (in images/):
+%    - idle_reward.png          (schedulable-idle reward only)
+%    - idle_w_priority_thr.png  (schedulable-idle + priority-slowdown reward)
+%    - <third figure TBD>
+% ============================================================
+
+% ============================================================
+\section{Results}
+% ============================================================
+
+% ---- Slide: Experimental setup -----------------------------
+\begin{frame}{Experimental Setup}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.52\textwidth}
+      \begin{block}{Agents compared}
+        \footnotesize
+        \begin{description}
+          \item[\textcolor{SoftCoral}{RL}] DQN, PPO
+          \item[\textcolor{SkyBlue!70!black}{Naive}] Random, Constant
+          \item[\textcolor{DeepBlue}{Greedy}] FCFS, SJF, Priority,\\ SmallestFirst, LargestFirst
+        \end{description}
+      \end{block}
+
+    \column{0.44\textwidth}
+      \begin{block}{Metrics}
+        \footnotesize
+        \begin{itemize}\setlength\itemsep{2pt}
+          \item Episode \textbf{reward}
+          \item \textbf{Jobs completed}
+          \item \textbf{Makespan}
+          \item Avg.\ job \textbf{wait time}
+          \item Avg.\ node \textbf{utilisation}
+          \item \textbf{Throughput} (jobs/h)
+        \end{itemize}
+      \end{block}
+  \end{columns}
+
+  \vspace{0.4em}
+  \centering
+  \small\textcolor{DeepBlue}{Same 9 agents and 6 metrics evaluated under each reward design (error bars $=\pm1$ std over episodes).}
+\end{frame}
+
+% ---- Slide: Reward design 1 — schedulable-idle only --------
+\begin{frame}{Results: Schedulable-Idle Reward}
+  \centering
+  \includegraphics[height=0.74\textheight]{idle_reward}
+
+  \vspace{0.2em}
+  \small\textcolor{DeepBlue}{Reward $= -w\,\tfrac{\min(D_t, n_{\text{free}})}{N}$ only. \;
+  \textbf{DQN} (best) leads on reward, jobs completed, utilisation \& throughput.}
+\end{frame}
+
+% ---- Slide: Reward design 2 — idle + priority slowdown -----
+\begin{frame}{Results: Idle + Priority-Slowdown Reward}
+  \centering
+  \includegraphics[height=0.74\textheight]{idle_w_priority_thr}
+
+  \vspace{0.2em}
+  \small\textcolor{DeepBlue}{Adds $-w_p\,\widehat{\sum_j p_j/T_j}$. \;
+  \textbf{DQN} still best; avg.\ wait drops ($156.8\!\to\!150.4$ min) by clearing high-priority, short jobs.}
+\end{frame}
+
+% ---- Slide: Reward design 3 — placeholder (TBD) ------------
+\begin{frame}{Results: <Third Reward Design>}
+  \centering
+  % Replace <third_figure> with the actual filename once available.
+  % \includegraphics[height=0.74\textheight]{third_figure}
+  \vfill
+  \textcolor{SoftCoral}{\large Figure to be added}
+  \vfill
+\end{frame}
