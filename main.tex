@@ -18,9 +18,14 @@
 \usepackage{graphicx}        % Images
 \usepackage{booktabs}        % Nice tables (\toprule, \midrule, \bottomrule)
 \usepackage{amsmath}         % Math
+\usepackage{pifont}          % Checkmark / cross symbols
 \usepackage{hyperref}        % Clickable links
 \usepackage{tikz}            % Diagrams (optional)
 \usepackage{algorithm2e}     % Pseudocode (optional)
+
+% Symbols used in the comparison table
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
 
 % ---------- Title info --------------------------------------
 \title[RL Scheduling for DCs]{RL-based Scheduling for Data Centers}
@@ -31,7 +36,10 @@
   Your University or Institution
 }
 \date{June 2026}
-\logo{\includegraphics[height=0.6cm]{logo}}  % remove or replace with your logo file
+% Show the logo only if a logo image is actually present (keeps local builds happy)
+\IfFileExists{logo.pdf}{\logo{\includegraphics[height=0.6cm]{logo}}}{%
+  \IfFileExists{logo.png}{\logo{\includegraphics[height=0.6cm]{logo}}}{%
+    \IfFileExists{logo.jpg}{\logo{\includegraphics[height=0.6cm]{logo}}}{}}}
 
 % ============================================================
 \begin{document}
