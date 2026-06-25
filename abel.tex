@@ -18,26 +18,19 @@
   scheduler may decide \emph{which job runs next} from a set of $K$ visible jobs.
 
   \vspace{0.3em}
-  \begin{block}{Markov Decision Process}
-    We frame scheduling as an MDP and learn the job selection policy with RL:
-    $$ \mathcal{M} = (\mathcal{S},\ \mathcal{A},\ P,\ R,\ \gamma) $$
+  \begin{block}{Why a Markov Decision Process?}
+    \small
+    Scheduling is \textbf{sequential}: each choice changes the cluster the next
+    one is made on, and its payoff (utilisation, delay) shows up later. An MDP
+    captures exactly this --- an agent observes a \emph{state}, takes an
+    \emph{action}, gets a \emph{reward}, and moves to the next state:
+    $$ \mathcal{M} = (\underbrace{\mathcal{S}}_{\text{state}},\ \underbrace{\mathcal{A}}_{\text{action}},\ \underbrace{P}_{\text{transition}},\ \underbrace{R}_{\text{reward}},\ \underbrace{\gamma}_{\text{discount}}) $$
   \end{block}
 
   \vspace{0.1em}
-  \begin{center}
-  \renewcommand{\arraystretch}{1.15}
-  \begin{tabular}{c l c}
-    \toprule
-    \textbf{Symbol} & \textbf{Meaning} & \textbf{Default} \\
-    \midrule
-    $N$              & total nodes in the cluster     & $64$ \\
-    $K$              & max visible queue length       & $10$ \\
-    $\Delta t$       & seconds advanced per step      & $60$ \\
-    $T$              & episode length (seconds)       & $86\,400$ (24\,h) \\
-    $H = T/\Delta t$ & decision horizon (steps)       & $1\,440$ \\
-    \bottomrule
-  \end{tabular}
-  \end{center}
+  We learn a policy $\pi_\theta(a_t\mid s_t)$ with RL that maximises long-run
+  reward. The next slides walk through each component
+  $(\mathcal{S},\mathcal{A},P,R)$ in turn.
 \end{frame}
 
 % ---- Slide 1: Roadmap of what changed ----------------------
