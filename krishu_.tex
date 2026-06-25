@@ -1,39 +1,26 @@
 % ============================================================
-%  Beamer Presentation Template
+%  Stakeholder-focused deck
 %  Topic: RL-based Scheduling for Data Centers
 % ============================================================
-\documentclass[aspectratio=169]{beamer}  % 16:9 widescreen (like PowerPoint default)
+\documentclass[aspectratio=169]{beamer}
 
 % ---------- Theme -------------------------------------------
 \usetheme{Madrid}
 \usecolortheme{default}
-% Other popular themes: AnnArbor, Berlin, Boadilla, CambridgeUS,
-%   Copenhagen, Darmstadt, Dresden, Frankfurt, Hannover, Luebeck,
-%   Malmoe, Montpellier, PaloAlto, Pittsburgh, Rochester, Singapore,
-%   Szeged, Warsaw
-% Other colour themes: albatross, beaver, beetle, crane, dolphin,
-%   dove, fly, lily, orchid, rose, seagull, seahorse, spruce, whale, wolverine
 
 % ---------- Packages ----------------------------------------
-\usepackage{graphicx}        % Images
-\usepackage{booktabs}        % Nice tables (\toprule, \midrule, \bottomrule)
-\usepackage{amsmath}         % Math
-\usepackage{pifont}          % Checkmark / cross symbols
-\usepackage{hyperref}        % Clickable links
-\usepackage{tikz}            % Diagrams (optional)
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,calc}
-\usepackage{algorithm2e}     % Pseudocode (optional)
-
-% Symbols used in the comparison table
-\newcommand{\cmark}{\ding{51}}
-\newcommand{\xmark}{\ding{55}}
-
 \usepackage{svg}
 \svgpath{{images/}}
 \graphicspath{{images/}}
 \svgsetup{inkscapelatex=false}
 
-% ---------- Visual style (shared with krishu.tex content) ----
+% ---------- Visual style ------------------------------------
 \definecolor{DeepBlue}{HTML}{0B2545}
 \definecolor{SkyBlue}{HTML}{2A9D8F}
 \definecolor{WarmGold}{HTML}{E9C46A}
@@ -51,6 +38,7 @@
 \setbeamercolor{alertblock body}{bg=SoftCoral!10}
 \setbeamerfont{frametitle}{series=\bfseries}
 \setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{}
 \setbeamertemplate{itemize item}{\color{SkyBlue}$\triangleright$}
 
 \setbeamertemplate{background canvas}{%
@@ -64,39 +52,32 @@
 
 % ---------- Title info --------------------------------------
 \title[RL Scheduling for DCs]{RL-based Scheduling for Data Centers}
-\subtitle{A Reinforcement Learning Approach}
-\author[A. Diaz Gonzalez]{Abel Diaz Gonzalez}
-\institute[Your University]{%
-  Department / Lab Name \\
-  Your University or Institution
-}
+\subtitle{Crisp Technical + Business Narrative}
+\author[A. Diaz Gonzalez \& K. Team]{Abel Diaz Gonzalez and Krishu}
+\institute[Lab / BU]{Lab / BU Collaboration}
 \date{June 2026}
-% Show the logo only if a logo image is actually present (keeps local builds happy)
-\IfFileExists{logo.pdf}{\logo{\includegraphics[height=0.6cm]{logo}}}{%
-  \IfFileExists{logo.png}{\logo{\includegraphics[height=0.6cm]{logo}}}{%
-    \IfFileExists{logo.jpg}{\logo{\includegraphics[height=0.6cm]{logo}}}{}}}
 
 % ============================================================
 \begin{document}
 
-% ---- Title slide -------------------------------------------
 \begin{frame}
   \titlepage
+  \vspace{-0.5em}
+  \begin{center}
+    \small\color{DeepBlue}Adaptive scheduling for performance, efficiency, and business impact
+  \end{center}
 \end{frame}
 
-% ---- Table of contents -------------------------------------
-\begin{frame}{Outline}
-  \tableofcontents
-\end{frame}
+% ============================================================
+\section{Background}
+% ============================================================
 
-\input{krishu.tex}
-
-
-\input{abel.tex}
+% ---- Background slide 1 of 2: Why Better Scheduling? --------
 
 \begin{frame}
   \centering
   \Huge\textbf{Thank You}\\[0.8em]
   \large Background section only (v1)
 \end{frame}
+
 \end{document}

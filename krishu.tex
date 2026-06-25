@@ -1,90 +1,11 @@
-% ============================================================
-%  krishu.tex  —  FRAGMENT, included via \input from main.tex
-%  Contains only frames. No \documentclass / preamble / document
-%  environment here. All packages, colors and styles live in main.tex.
-% ============================================================
-
-\begin{frame}{Storyline for Soumyendu}
-  \small
-  \begin{enumerate}
-    \item Context and why this problem matters now
-    \item Contributions to the scheduling problem
-    \item Why this sits at the HPC + ML intersection in industry
-    \item Exact MDP formulation
-    \item Common baselines and RL methods
-    \item Innovations in reward and features
-    \item Selected results and two communication pathways
-    \item Standalone NeurIPS workshop positioning
-    \item Bridge to hybrid cooling optimization for AAAI
-  \end{enumerate}
-\end{frame}
-
-% ============================================================
-\section{Background}
-% ============================================================
-
-% ---- Background slide 1 of 2: Why Better Scheduling? --------
+% ---- Background slide 1 of 2: Why Better Scheduling? -------
 \begin{frame}{Why Better Scheduling?}
   \centering
-  \begin{tikzpicture}[scale=0.95]
-    % LEFT SIDE: Poor scheduling (red zone)
-    \draw[rounded corners=8pt,fill=SoftCoral!12,draw=SoftCoral!50,line width=1.5pt] (-6.8,-3.2) rectangle (-2.2,3.2);
-    \node[font=\bfseries,SoftCoral!80!black] at (-4.5,2.7) {Poor Scheduling};
-    
-    % Problem icons/boxes
-    \node[draw,rounded corners=4pt,fill=SoftCoral!25,minimum width=3.8cm,minimum height=0.9cm,font=\small,align=center] at (-4.5,1.6) {Long job wait times};
-    \node[draw,rounded corners=4pt,fill=SoftCoral!25,minimum width=3.8cm,minimum height=0.9cm,font=\small,align=center] at (-4.5,0.4) {Servers idle or overloaded};
-    \node[draw,rounded corners=4pt,fill=SoftCoral!25,minimum width=3.8cm,minimum height=0.9cm,font=\small,align=center] at (-4.5,-0.8) {High energy waste};
-    \node[draw,rounded corners=4pt,fill=SoftCoral!25,minimum width=3.8cm,minimum height=0.9cm,font=\small,align=center] at (-4.5,-2.0) {SLA violations, unhappy users};
-    
-    % Arrow in middle
-    \draw[->,line width=4pt,DeepBlue!70] (-1.8,0) -- (1.8,0);
-    \node[font=\bfseries\large,DeepBlue,fill=white,inner sep=3pt] at (0,0) {Smart Scheduler};
-    
-    % RIGHT SIDE: Good scheduling (green zone)
-    \draw[rounded corners=8pt,fill=SkyBlue!12,draw=SkyBlue!60,line width=1.5pt] (2.2,-3.2) rectangle (6.8,3.2);
-    \node[font=\bfseries,SkyBlue!80!black] at (4.5,2.7) {Better Scheduling};
-    
-    % Benefit icons/boxes
-    \node[draw,rounded corners=4pt,fill=SkyBlue!25,minimum width=3.8cm,minimum height=0.9cm,font=\small,align=center] at (4.5,1.6) {Faster job turnaround};
-    \node[draw,rounded corners=4pt,fill=SkyBlue!25,minimum width=3.8cm,minimum height=0.9cm,font=\small,align=center] at (4.5,0.4) {Balanced server load};
-    \node[draw,rounded corners=4pt,fill=WarmGold!30,minimum width=3.8cm,minimum height=0.9cm,font=\small,align=center] at (4.5,-0.8) {Lower power bills};
-    \node[draw,rounded corners=4pt,fill=SkyBlue!25,minimum width=3.8cm,minimum height=0.9cm,font=\small,align=center] at (4.5,-2.0) {Meet SLAs, happy customers};
-    
-    % Bottom impact statement
-    \node[draw,rounded corners=6pt,fill=DeepBlue!10,minimum width=12cm,minimum height=0.9cm,font=\small\bfseries,DeepBlue] at (0,-4.2) {Data centers use 1--2\% of global electricity --- smarter scheduling directly cuts cost and carbon};
-  \end{tikzpicture}
+  \includesvg[height=0.82\textheight]{scheduling_comparison}
 \end{frame}
 
-% ---- Background slide 2 of 2: Why RL for Scheduling ---------
+% ---- Background slide 2 of 2: Why RL for Scheduling? -------
 \begin{frame}{Why RL for Scheduling?}
   \centering
-  \begin{tikzpicture}[scale=1.0,>=Latex]
-    % RL loop (large, central)
-    \node[draw,rounded corners=8pt,fill=DeepBlue!10,minimum width=4.0cm,minimum height=1.3cm,font=\bfseries] (env) at (0,2.2) {Data Center};
-    \node[draw,rounded corners=8pt,fill=SkyBlue!22,minimum width=4.0cm,minimum height=1.3cm,font=\bfseries] (agent) at (0,-1.8) {RL Agent};
-    
-    % State arrow (left side)
-    \draw[->,line width=2pt,DeepBlue!70] (-2.0,1.5) -- (-2.0,-1.1);
-    \node[font=\small,align=center,DeepBlue] at (-3.5,0.2) {\textbf{State}\\queue + machines\\+ power};
-    
-    % Action arrow (right side)
-    \draw[->,line width=2pt,SkyBlue!80!black] (2.0,-1.1) -- (2.0,1.5);
-    \node[font=\small,align=center,SkyBlue!80!black] at (3.6,0.2) {\textbf{Action}\\assign job\\to server};
-    
-    % Reward arrow (top)
-    \draw[->,line width=2pt,SoftCoral!85!black] (0,1.5) -- (0,-1.1);
-    \node[draw,rounded corners=3pt,fill=SoftCoral!20,font=\small,align=center] at (0,0.2) {\textbf{Reward}\\latency + util $-$ energy};
-    
-    % Key insight boxes
-    \node[draw,rounded corners=4pt,fill=LightMint,minimum width=3.2cm,minimum height=0.7cm,font=\footnotesize,align=center] at (-5.2,2.2) {Decisions affect\\future queue};
-    \node[draw,rounded corners=4pt,fill=LightMint,minimum width=3.2cm,minimum height=0.7cm,font=\footnotesize,align=center] at (5.2,2.2) {Feedback is\\delayed};
-    \node[draw,rounded corners=4pt,fill=LightMint,minimum width=3.2cm,minimum height=0.7cm,font=\footnotesize,align=center] at (-5.2,-1.8) {Optimizes\\long-term};
-    \node[draw,rounded corners=4pt,fill=LightMint,minimum width=3.2cm,minimum height=0.7cm,font=\footnotesize,align=center] at (5.2,-1.8) {Adapts to\\workload};
-    
-    % Bottom summary
-    \node[font=\footnotesize,DeepBlue] at (0,-3.6) {\textbf{RL learns policies that optimize cumulative impact, not just instant decisions}};
-  \end{tikzpicture}
+  \includesvg[height=0.82\textheight]{rl_loop}
 \end{frame}
-
-
