@@ -18,16 +18,19 @@
     \column{0.52\textwidth}
       \begin{block}{Agents compared}
         \footnotesize
+        \begin{minipage}[t][3.4cm]{\linewidth}
         \begin{description}
           \item[\textcolor{SoftCoral}{RL}] DQN, PPO
           \item[\textcolor{SkyBlue!70!black}{Naive}] Random, Constant
           \item[\textcolor{DeepBlue}{Greedy}] FCFS, SJF, Priority,\\ SmallestFirst, LargestFirst
         \end{description}
+        \end{minipage}
       \end{block}
 
     \column{0.44\textwidth}
       \begin{block}{Metrics}
         \footnotesize
+        \begin{minipage}[t][3.4cm]{\linewidth}
         \begin{itemize}\setlength\itemsep{2pt}
           \item Episode \textbf{reward}
           \item \textbf{Jobs completed}
@@ -36,12 +39,13 @@
           \item Avg.\ node \textbf{utilisation}
           \item \textbf{Throughput} (jobs/h)
         \end{itemize}
+        \end{minipage}
       \end{block}
   \end{columns}
 
   \vspace{0.4em}
   \centering
-  \small\textcolor{DeepBlue}{Same 9 agents and 6 metrics evaluated under each reward design (error bars $=\pm1$ std over episodes).}
+  \small\textcolor{DeepBlue}{Same 9 agents and 6 metrics evaluated under each reward design (error bars $=\pm1$ std over 30 episodes).}
 \end{frame}
 
 % ---- Slide: Reward design 1 — schedulable-idle only --------

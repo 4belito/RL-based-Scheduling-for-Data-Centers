@@ -104,7 +104,7 @@
   \begin{columns}[T,onlytextwidth]
     \column{0.315\textwidth}
         \begin{block}{v1: util.\ $-$ queue}
-        \begin{minipage}[t][4.2cm]{\linewidth}
+        \begin{minipage}[t][4.0cm]{\linewidth}
         $$ r_t = w_u u_t - w_Q Q_t $$
         \begin{itemize}\setlength\itemsep{2pt}
           \item Rewards busy nodes, penalises backlog
@@ -117,7 +117,7 @@
     \hfill
     \column{0.315\textwidth}
       \begin{block}{v2(a): schedulable-idle}
-        \begin{minipage}[t][4.2cm]{\linewidth}
+        \begin{minipage}[t][4.0cm]{\linewidth}
         $$ r_t = -w\,\frac{\min(D_t, n_{\text{free}})}{N} $$
         \begin{itemize}\setlength\itemsep{2pt}
           \item Charges only for idle nodes the queue \emph{could} use
@@ -129,7 +129,7 @@
     \hfill
     \column{0.315\textwidth}
       \begin{block}{v2(b): priority slowdown}
-        \begin{minipage}[t][4.2cm]{\linewidth}
+        \begin{minipage}[t][4.0cm]{\linewidth}
         $$ r^{\text{p}}_t = -w_p\,\widehat{\textstyle\sum_{j} \tfrac{p_j}{T_j}} $$
         \begin{itemize}\setlength\itemsep{2pt}
           \item Over \textbf{running \& queued} jobs
@@ -140,9 +140,9 @@
       \end{block}
   \end{columns}
 
-  \vspace{0.4em}
+  \vspace{0.2em}
   \centering
-  \textcolor{DeepBlue}{\textbf{Why:}} bounded, well-scaled signals that target head-of-line blocking and priority directly.
+  \textcolor{DeepBlue}{\textbf{Why:}} queue length over-penalises a full cluster and utilisation over-penalises an empty queue: a noisy, workload-dependent signal. Schedulable-idle charges only for avoidable idleness.
   \vspace{0.4em}
  
  \notebar{\mbox{$u_t$ = utilisation} \;\(\mid\)\; \mbox{$Q_t$ = queue length} \;\(\mid\)\; \mbox{$D_t$ = queue demand (nodes)} \;\(\mid\)\; \mbox{$n_{\text{free}}$ = idle nodes} \;\(\mid\)\; \mbox{$N$ = total nodes} \;\(\mid\)\; \mbox{$p_j$ = job priority} \;\(\mid\)\; \mbox{$T_j$ = job runtime}}
@@ -157,17 +157,18 @@
     \column{0.52\textwidth}
       \textbf{From v1 to v2 we gain:}
       \begin{itemize}
-        \item \textbf{Bounded signals} --- state in $[0,1]$, reward in $[-1,0]$
-        \item \textbf{Load invariance} --- no dependence on raw queue size or job distribution
-        \item \textbf{Richer observation} --- per-job features instead of a single mean
-        \item \textbf{Direct objective} --- penalise \emph{schedulable} idle capacity (head-of-line blocking)
+        \item \textbf{Bounded signals}: state in $[0,1]$, reward in $[-1,0]$
+        \item \textbf{Load invariance}: no dependence on raw queue size or job distribution
+        \item \textbf{Richer observation}: per-job features instead of a single mean
+        \item \textbf{Direct objective}: penalise \emph{schedulable} idle capacity (head-of-line blocking)
       \end{itemize}
 
     \column{0.48\textwidth}
-      \begin{alertblock}{Net effect}
-        A policy that learns to \textbf{promote jobs that fit} the free nodes,
-        draining the queue faster --- and that \textbf{transfers} across
-        workloads without re-tuning reward weights.
+      \begin{alertblock}{Main result: training is now possible}
+        Under the old design returns stayed \textbf{flat and noisy}: the agents
+        \textbf{failed to learn}. With the redesigned state and reward, returns
+        \textbf{climb steadily}: the agent \textbf{clearly learns} to promote
+        jobs that fit the free nodes.
       \end{alertblock}
   \end{columns}
 \end{frame}
